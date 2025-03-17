@@ -4,31 +4,17 @@
 #include <string.h>
 #include <time.h>
 
-float double_float(float f) {
+float float_bitshift(float f, int bitshift) {
     uint32_t i;
     float result;
 
     memcpy(&i, &f, sizeof(f)); // Copy float to unsigned integer
     uint32_t exponent = (i >> 23) & 0xFF; // Extract exponent bits
 
-    exponent++;
+    exponent += bitshift;
 
     i = (i & ~(0xFF << 23)) | (exponent << 23); // Merge modified exponent into integer
     memcpy(&result, &i, sizeof(result)); // Copy modified bits into float
-
-    return result;
-}
-float half_float(float f) {
-    uint32_t i;
-    float result;
-
-    memcpy(&i, &f, sizeof(f));
-    uint32_t exponent = (i >> 23) & 0xFF;
-
-    exponent--;
-
-    i = (i & ~0x7f800000) | (exponent << 23);
-    memcpy(&result, &i, sizeof(result));
 
     return result;
 }
@@ -47,19 +33,19 @@ int main() {
 
     clock_t start = clock(); // Time double_float function
     for (int i = 0; i < numIterations; i++) {
-        fastDoubleResult = double_float(random);
+        fastDoubleResult = float_bitshift(random, 1);
     }
     clock_t end = clock();
     double doubleFloatTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("double_float function time: %.8f seconds (result: %.24f)\n", doubleFloatTime, fastDoubleResult);
+    printf("float_bitshift (double) function time: %.8f seconds (result: %.24f)\n", doubleFloatTime, fastDoubleResult);
 
     start = clock(); // Time half_float function
     for (int i = 0; i < numIterations; i++) {
-        fastHalfResult = half_float(random);
+        fastHalfResult = float_bitshift(random, -1);
     }
     end = clock();
     double halfFloatTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("half_float function time: %.8f seconds (result: %.24f)\n", halfFloatTime, fastHalfResult);
+    printf("float_bitshift (half) function time: %.8f seconds (result: %.24f)\n", halfFloatTime, fastHalfResult);
 
     start = clock(); // Time regular doubling w/ multiplication
     for (int i = 0; i < numIterations; i++) {
