@@ -1,1 +1,1 @@
-A "fast" floating point function that can double or halve floating points by incrementing or decrementing the exponent. Made obsolete due to Intel's SIMD architecture, which can natively multiply and divide floating points much faster.
+2 "fast" floating point functions that can double or halve floating points by incrementing or decrementing the exponent. Made obsolete due to Intel's SIMD architecture, which can natively multiply or divide floating points much faster with higher precision.

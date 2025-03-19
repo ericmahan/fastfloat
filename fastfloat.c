@@ -19,49 +19,113 @@ float float_bitshift(float f, int bitshift) {
     return result;
 }
 
+double double_bitshift(double f, int bitshift) {
+    uint64_t i;
+    double result;
+
+    memcpy(&i, &f, sizeof(f));
+    uint64_t exponent = (i >> 52) & 0x7FF;
+
+    exponent += bitshift;
+
+    i = (i & ~(0x7FFULL << 52)) | (exponent << 52);
+    memcpy(&result, &i, sizeof(result));
+
+    return result;
+}
+
+
 int main() {
     srand(time(0)); // Seed the RNG
-    float random = (float) rand() / 1073741824;
     int numIterations = 10000000;
 
-    float fastDoubleResult = 0.0f;
-    float fastHalfResult = 0.0f;
-    float dubb = 0.0f;
-    float halve = 0.0f;
+    double randomDouble = (double) rand() / 1073741824;
+    float randomFloat = (float) randomDouble;
 
-    printf("Original float, \'f\': %.24f\n", random);
+    float fastFloatX2Result = 0.0f;
+    float fastFloatHalfResult = 0.0f;
+    double fastDoubleX2Result = 0.0f;
+    double fastDoubleHalfResult = 0.0f;
+    float floatDouble = 0.0f;
+    float floatHalve = 0.0f;
+    double doubleDouble = 0.0f;
+    double doubleHalve = 0.0f;
 
-    clock_t start = clock(); // Time double_float function
+    printf("Original random float: %.24f\n", randomFloat);
+    printf("Original random double: %.32lf\n", randomDouble);
+
+
+    // Time float_bitshift (x2) function
+    clock_t start = clock();
     for (int i = 0; i < numIterations; i++) {
-        fastDoubleResult = float_bitshift(random, 1);
+        fastFloatX2Result = float_bitshift(randomFloat, 1);
     }
     clock_t end = clock();
     double doubleFloatTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("float_bitshift (double) function time: %.8f seconds (result: %.24f)\n", doubleFloatTime, fastDoubleResult);
+    printf("float_bitshift (x2) function time: %.8fs\t(result: %.24f)\n", doubleFloatTime, fastFloatX2Result);
 
-    start = clock(); // Time half_float function
+    // Time float_bitshift (/2) function
+    start = clock();
     for (int i = 0; i < numIterations; i++) {
-        fastHalfResult = float_bitshift(random, -1);
+        fastFloatHalfResult = float_bitshift(randomFloat, -1);
     }
     end = clock();
     double halfFloatTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("float_bitshift (half) function time: %.8f seconds (result: %.24f)\n", halfFloatTime, fastHalfResult);
+    printf("float_bitshift (/2) function time: %.8fs\t(result: %.24f)\n", halfFloatTime, fastFloatHalfResult);
 
-    start = clock(); // Time regular doubling w/ multiplication
+    // Time double_bitshift (x2) function
+    start = clock();
     for (int i = 0; i < numIterations; i++) {
-        dubb = random * 2.0f;
+        fastDoubleX2Result = float_bitshift(randomFloat, 1);
+    }
+    end = clock();
+    double doubleDoubleTime = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("double_bitshift (x2) function time: %.8fs\t(result: %.32lf)\n", doubleDoubleTime, fastDoubleX2Result);
+
+    // Time double_bitshift (/2) function
+    start = clock();
+    for (int i = 0; i < numIterations; i++) {
+        fastDoubleHalfResult = float_bitshift(randomFloat, -1);
+    }
+    end = clock();
+    double halfDoubleTime = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("double_bitshift (/2) function time: %.8fs\t(result: %.32lf)\n", halfDoubleTime, fastDoubleHalfResult);
+
+    // Time regular float (x2)
+    start = clock();
+    for (int i = 0; i < numIterations; i++) {
+        floatDouble = randomFloat * 2.0f;
     }
     end = clock();
     double multiplyTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Regular doubling time: %.8f seconds (result: %.24f)\n", multiplyTime, dubb);
-    
-    start = clock(); // Time regular halving w/ division
+    printf("Regular float (x2) time: %.8fs\t\t\t\t\t\t(result: %.24f)\n", multiplyTime, floatDouble);
+
+    // Time regular float (/2)
+    start = clock();
     for (int i = 0; i < numIterations; i++) {
-        halve = random / 2.0f;
+        floatHalve = randomFloat / 2.0f;
     }
     end = clock();
     double divideTime = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("Regular halving time: %.8f seconds (result: %.24f)\n", divideTime, halve);
+    printf("Regular float (/2) time: %.8fs\t\t\t\t\t\t(result: %.24f)\n", divideTime, floatHalve);
+
+    // Time regular double (x2)
+    start = clock();
+    for (int i = 0; i < numIterations; i++) {
+        doubleDouble = randomDouble * 2.0f;
+    }
+    end = clock();
+    double doubleX2Time = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Regular double (x2) time: %.8fs\t\t\t\t\t\t(result: %.32lf)\n", doubleX2Time, doubleDouble);
+
+    // Time regular double (/2)
+    start = clock();
+    for (int i = 0; i < numIterations; i++) {
+        doubleHalve = randomDouble / 2.0f;
+    }
+    end = clock();
+    double doubleHalveTime = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("Regular double (/2) time: %.8fs\t\t\t\t\t\t(result: %.32lf)\n", doubleHalveTime, doubleHalve);
 
     return 0;
 }
